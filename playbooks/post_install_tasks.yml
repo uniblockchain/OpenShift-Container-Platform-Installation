@@ -73,7 +73,7 @@
         ignore_errors: true
 
       - name: "Patch Jenkins DeploymentConfig with correct image"
-        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig patch dc jenkins patch='{"spec":{"template":{"spec":{"containers":[{"name":"<container-name>","image":"registry.access.redhat.com/openshift3/jenkins-2-rhel7@sha256:97ecffb2ecd8f8517abe9c8296a1404e5661038a1327f95f068c1fcc5c6e08b8"}]}}}}' -n jenkins
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig patch dc jenkins patch='{"spec":{"template":{"spec":{"containers":[{"name":"<container-name>","image":"registry.access.redhat.com/openshift3/jenkins-2-rhel7:latest"}]}}}}' -n jenkins
         ignore_errors: true
 
       - name: "Create a route"

@@ -1,40 +1,59 @@
+# Example OpenShift inventory file 3.10
+
+################
+# Master Nodes #
+################
 [masters]
 server1
 server2
 server3
 
+##############
+# Etcd Nodes #
+##############
 [etcd]
 server1
 server2
 server3
 
+#########
+# Nodes #
+#########
 [nodes]
-server1 openshift_node_group_name='node-config-master' 		#docker_block_device=xxx
-server2 openshift_node_group_name='node-config-master' 		#docker_block_device=xxx
-server3 openshift_node_group_name='node-config-master' 		#docker_block_device=xxx
-infra1 openshift_node_group_name='node-config-infra' 		  #docker_block_device=xxx
-infra2 openshift_node_group_name='node-config-infra' 		  #docker_block_device=xxx
-infra3 openshift_node_group_name='node-config-infra' 		  #docker_block_device=xxx
-compute1 openshift_node_group_name='node-config-compute' 	#docker_block_device=xxx
-compute2 openshift_node_group_name='node-config-compute' 	#docker_block_device=xxx
-compute3 openshift_node_group_name='node-config-compute' 	#docker_block_device=xxx
+server1 openshift_node_group_name='node-config-master' 			#docker_block_device=xxx
+server2 openshift_node_group_name='node-config-master' 			#docker_block_device=xxx
+server3 openshift_node_group_name='node-config-master' 			#docker_block_device=xxx
+infra1 openshift_node_group_name='node-config-infra' 		  	#docker_block_device=xxx
+infra2 openshift_node_group_name='node-config-infra' 		  	#docker_block_device=xxx
+infra3 openshift_node_group_name='node-config-infra' 		  	#docker_block_device=xxx
+compute1 openshift_node_group_name='node-config-compute' 		#docker_block_device=xxx
+compute2 openshift_node_group_name='node-config-compute' 		#docker_block_device=xxx
+compute3 openshift_node_group_name='node-config-compute' 		#docker_block_device=xxx
 
+#######################
+# Node Vars (template)#
+#######################
 [nodes:vars]
 #unsecure_proxy_url=http://xx.yy.zz
 #secure_proxy_url=https://xx.yy.zz
 
-# Create an OSEv3 group that contains the masters and nodes groups
 [OSEv3:children]
 masters
 nodes
 etcd
 
+############
+# Node Vars#
+############
 [OSEv3:vars]
 openshift_http_proxy=http://xx.yy.zz
 openshift_https_proxy=https://xx.yy.zz
 openshift_no_proxy=.hosts.example.com,xx.yy.zz
 #openshift_generate_no_proxy_hosts=false
 
+#ansible_ssh_user="{{ansible_user|default(lookup('env', 'USER'))}}"
+#Disable memory checks
+#openshift_disable_check=disk_availability,docker_image_availability,docker_storage,memory_availability,package_availability,package_version
 ansible_user={user}
 ansible_become=yes
 
