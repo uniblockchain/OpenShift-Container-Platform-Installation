@@ -12,9 +12,9 @@ server3
 server1 openshift_node_group_name='node-config-master' 		#docker_block_device=xxx
 server2 openshift_node_group_name='node-config-master' 		#docker_block_device=xxx
 server3 openshift_node_group_name='node-config-master' 		#docker_block_device=xxx
-infra1 openshift_node_group_name='node-config-infra' 		#docker_block_device=xxx
-infra2 openshift_node_group_name='node-config-infra' 		#docker_block_device=xxx
-infra3 openshift_node_group_name='node-config-infra' 		#docker_block_device=xxx
+infra1 openshift_node_group_name='node-config-infra' 		  #docker_block_device=xxx
+infra2 openshift_node_group_name='node-config-infra' 		  #docker_block_device=xxx
+infra3 openshift_node_group_name='node-config-infra' 		  #docker_block_device=xxx
 compute1 openshift_node_group_name='node-config-compute' 	#docker_block_device=xxx
 compute2 openshift_node_group_name='node-config-compute' 	#docker_block_device=xxx
 compute3 openshift_node_group_name='node-config-compute' 	#docker_block_device=xxx
