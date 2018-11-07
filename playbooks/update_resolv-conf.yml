@@ -1,0 +1,8 @@
+- hosts: nodes
+  become: yes
+  tasks:
+    - shell: echo "search us.dev.corp" > /etc/resolv.conf
+    - shell: echo "{{ ansible_default_ipv4.address }}" >> /etc/resolv.conf
+    
+        
+   

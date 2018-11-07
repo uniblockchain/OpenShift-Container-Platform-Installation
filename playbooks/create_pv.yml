@@ -1,0 +1,23 @@
+---
+## This playbook creates pvs based on folders already created on nfs share. templates/generic-nfs-pv has the nfs folder details.
+- hosts: masters
+  become: true
+  tasks:
+  - block:
+      - name: Create a temporary directory for pv/pvc
+        file:
+          path: /var/tmp/ocp_pvs
+          state: directory
+      - name: template pvs
+        template: 
+           src: generic-nfs-pv.j2
+           dest: /var/tmp/ocp_pvs/pv{{ item }}-5g.yml
+        with_sequence: start=3 end=9 stride=1 
+      - name: Create pvs
+        command: oc create -f /var/tmp/ocp_pvs/pv{{ item }}-5g.yml
+        with_sequence: start=3 end=9 stride=1 
+      - name: Print pvs
+        shell: oc get pv
+    when: ( inventory_hostname == groups.masters[0] )
+
+

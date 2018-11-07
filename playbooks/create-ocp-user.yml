@@ -1,0 +1,71 @@
+---
+- hosts: nodes
+  vars:
+    ocp_user: ocpadmin
+    ocp_group: ocpadmin
+    ssh_private_key: ~/.ssh/ocpadmin
+    ssh_public_key: "{{ ssh_private_key }}.pub"
+    
+  tasks:
+    - name: Create dedicated OCP group
+      group:
+        name: "{{ ocp_group }}"
+        state: present
+      become: yes
+
+    - name: Create dedicated OCP user
+      user:
+        name: "{{ ocp_user }}"
+        comment: "OCP Admin"
+        group: "{{ ocp_group }}"
+        state: present
+      become: yes
+
+    - name: Check if SSH private key already exists
+      stat:
+        path: "{{ ssh_private_key }}"
+      register: pathname
+      delegate_to: localhost
+
+    - name: Generate SSH private key
+      openssl_privatekey:
+        path: "{{ ssh_private_key }}"
+        state: present
+      when: not pathname.stat.exists
+      delegate_to: localhost
+
+    - name: Generate SSH public key
+      openssl_publickey:
+        privatekey_path: "{{ ssh_private_key }}"
+        path: "{{ ssh_public_key }}"
+        format: OpenSSH
+        state: present
+      delegate_to: localhost
+
+    - name: Ensure OCP user SSH directory exists
+      file:
+        path: "/home/{{ ocp_user }}/.ssh"
+        owner: "{{ ocp_user }}"
+        group: "{{ ocp_group }}"
+        mode: u=rwx,og=
+        state: directory
+      become: yes
+
+    - name: Add SSH authorized key to OCP user
+      copy:
+        src: "{{ ssh_public_key }}"
+        dest: "/home/{{ ocp_user }}/.ssh/authorized_keys"
+        owner: "{{ ocp_user }}"
+        group: "{{ ocp_group }}"
+        mode: u=rwx,og=
+      become: yes
+
+    - name: add sudo rule for admin group
+      lineinfile:
+        dest: /etc/sudoers.d/ocp-admins
+        regexp: "^%{{ ocp_group }}"
+        line: "%{{ ocp_group}} ALL=(ALL) NOPASSWD: ALL"
+        create: yes
+        state: present
+      become: yes
+

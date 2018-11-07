@@ -1,0 +1,47 @@
+#!/usr/bin/ansible-playbook
+---
+- hosts: nodes
+  become: yes
+  gather_facts: no
+  tasks:
+  - name: Pull down static pod images
+    vars:
+      images:
+      - registry.access.redhat.com/rhel7/etcd:3.2.22
+      - registry.access.redhat.com/openshift3/ose-node:v3.10
+      - registry.access.redhat.com/openshift3/ose-node:v3.10.45
+      - registry.access.redhat.com/openshift3/ose-control-plane:v3.10
+      - registry.access.redhat.com/openshift3/ose-pod:v3.10.45
+    command: "docker pull {{ item }}"
+    with_items: images
+
+  - name: Set HTTP_PROXY/HTTPS_PROXY in /etc/sysconfig/docker
+    blockinfile:
+      block: |
+        HTTPS_PROXY=https://180.211.186.6:8050
+        HTTP_PROXY=http://180.211.186.6:8050
+        NO_PROXY=.us.dev.corp,wt.produbanus.corp,.cluster.local,.svc,localhost,127.0.0.1,172.30.0.1,180.211.25.109,180.211.25.105,180.211.25.106,22.250.26.237,22.250.26.229,22.250.26.230
+      dest: /etc/sysconfig/docker
+      create: yes
+
+  - name: Set net.ipv4.ip_foward kernel parameter
+    lineinfile:
+      path: /etc/sysctl.conf
+      regexp: net.ipv4.ip_forward
+      line: net.ipv4.ip_forward = 1
+
+  - name: Ensure NTP is synced
+    block:
+    - name: Stop ntpd
+      systemd:
+        name: ntpd
+        state: stopped
+    
+    - name: Force ntp sync
+      command: ntpd -qg
+    
+    - name: Start/enable ntpd
+      systemd:
+        name: ntpd
+        state: started
+        enabled: true

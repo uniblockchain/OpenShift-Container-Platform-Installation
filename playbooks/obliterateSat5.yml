@@ -1,0 +1,33 @@
+---
+- hosts: nodes
+  become: yes
+
+  tasks:
+    - name: Stop Satellite 5 services
+      shell: >
+        systemctl stop rhnsd.service rhsmcertd.service
+
+    - name: Disable Satellite 5 services
+      shell: >
+        systemctl disable rhnsd.service rhsmcertd.service
+
+    - name: Wipes subscription manager state and resets to a fresh start
+      shell: >
+        subscription-manager clean
+
+    - name: Unregister node
+      shell: >
+        subscription-manager unregister
+
+    - name: Wipe YUM / DNF cache
+      shell: >
+        rm -rf /var/cache/yum/*
+
+    - name: Remove packages associated with Satellite 5 
+      shell: >
+        rpm -qa | grep -E "katello-agent|gofer|python-gofer-proton" | xargs -n1 yum -y remove
+
+    - name: Write OCP customized RHSM configuration
+      copy:
+        src: files/rhsm.conf
+        dest: /etc/rhsm/rhsm.conf

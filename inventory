@@ -1,0 +1,73 @@
+[masters]
+server1
+server2
+server3
+
+[etcd]
+server1
+server2
+server3
+
+[nodes]
+server1 openshift_node_group_name='node-config-master' 		#docker_block_device=xxx
+server2 openshift_node_group_name='node-config-master' 		#docker_block_device=xxx
+server3 openshift_node_group_name='node-config-master' 		#docker_block_device=xxx
+infra1 openshift_node_group_name='node-config-infra' 		#docker_block_device=xxx
+infra2 openshift_node_group_name='node-config-infra' 		#docker_block_device=xxx
+infra3 openshift_node_group_name='node-config-infra' 		#docker_block_device=xxx
+compute1 openshift_node_group_name='node-config-compute' 	#docker_block_device=xxx
+compute2 openshift_node_group_name='node-config-compute' 	#docker_block_device=xxx
+compute3 openshift_node_group_name='node-config-compute' 	#docker_block_device=xxx
+
+[nodes:vars]
+#unsecure_proxy_url=http://xx.yy.zz
+#secure_proxy_url=https://xx.yy.zz
+
+# Create an OSEv3 group that contains the masters and nodes groups
+[OSEv3:children]
+masters
+nodes
+etcd
+
+[OSEv3:vars]
+openshift_http_proxy=http://xx.yy.zz
+openshift_https_proxy=https://xx.yy.zz
+openshift_no_proxy=.hosts.example.com,xx.yy.zz
+#openshift_generate_no_proxy_hosts=false
+
+ansible_user={user}
+ansible_become=yes
+
+openshift_deployment_type=openshift-enterprise
+openshift_release=v3.10.45
+openshift_install_examples=true
+
+openshift_master_default_subdomain=cloudapps.example.com
+openshift_master_cluster_hostname=internal.example.com
+openshift_master_cluster_public_hostname=console.example.com
+
+#openshift_master_overwrite_named_certificates=True
+openshift_master_named_certificates=[{"certfile": "{{inventory_dir}}/certs/path_to_cert.cer", "keyfile": "{{inventory_dir}}/certs/path_to_key.key", "cafile": "{{inventory_dir}}/certs/bundle.ca"}]
+
+os_firewall_use_firewalld=true
+
+openshift_master_api_port=443
+openshift_master_console_port=443
+
+# admin/admin user to start, remove when auth integration complete
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+openshift_master_htpasswd_users={'admin': '$apr1$im2AJZkl$iT2VLCIL4DjYU2RaqAMyA.'}
+
+openshift_metrics_install_metrics=true
+openshift_logging_install_logging=true
+openshift_hosted_prometheus_deploy=true
+
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+
+# Review and change if needed
+osm_cluster_network_cidr=10.128.0.0/14
+openshift_portal_net=172.30.0.0/16
+
+#logrotate_scripts=[{"name": "syslog", "path": "/var/log/cron\n/var/log/maillog\n/var/log/messages\n/var/log/secure\n/var/log/spooler\n", "options": ["daily", "rotate 7", "compress", "sharedscripts", "missingok"], "scripts": {"postrotate": "/bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true"}}]
+
+#openshift_master_audit_config={"enabled": "true", "auditFilePath": "/var/lib/origin/audit/audit.log", "maximumFileRetentionDays": "14", "maximumFileSizeMegabytes": "500", "maximumRetainedFiles": "5"}

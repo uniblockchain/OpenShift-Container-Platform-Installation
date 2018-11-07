@@ -1,0 +1,9 @@
+---
+- hosts: nodes
+  become: yes
+
+  tasks:
+    - name: Set up proxy environment
+      template:
+        src: templates/environment.j2
+        dest: /etc/environment

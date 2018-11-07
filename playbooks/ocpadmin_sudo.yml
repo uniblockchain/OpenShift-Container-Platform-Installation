@@ -1,0 +1,12 @@
+---
+- hosts: nodes
+  become: yes
+    
+  tasks:
+    - name: add sudo rules for ocpadmin
+      copy:
+        src: files/sudoers.d-ocpadmin
+        dest: /etc/sudoers.d/ocpadmin
+        mode: 0440
+      become: yes
+

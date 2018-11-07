@@ -1,0 +1,11 @@
+#!/usr/bin/ansible-playbook
+---
+- hosts: nodes
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: Set net.ipv4.ip_foward kernel parameter
+    lineinfile:
+      path: /etc/sysctl.conf
+      regexp: net.ipv4.ip_forward
+      line: net.ipv4.ip_forward = 1

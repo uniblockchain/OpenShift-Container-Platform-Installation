@@ -1,0 +1,27 @@
+node {
+    stage('Build') {
+        echo "This is the build stage"
+	sleep 5
+    }
+    stage('Test') {
+        echo "This is the testing stage"
+	sleep 2
+    }
+}
+node ('maven') {    
+    stage('DeployDev') {
+	echo "[Running on Maven Slave]"
+        echo "This stage could be used to deploy to Dev"
+	sleep 5
+    }
+    stage('PromoteTest') {
+	echo "[Running on Maven Slave]"
+        echo "This stage could be used to deploy to test, for example, conditional on passing tests or manual approval"
+	sleep 5
+    }
+    stage('PromoteProd') {
+	echo "[Running on Maven Slave]"
+        echo "This stage could be used to promote an image to prod, conditional on passing tests or manual approval"
+	sleep 5
+    }
+}

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jenkins-dev-nfs 
+spec:
+  capacity:
+    storage: 5Gi 
+  accessModes:
+  - ReadWriteMany 
+  nfs: 
+    path: /gpfs/gpfs0/datos/sdop-openshift/jenkins-master 
+    server: essva.us.dev.corp
+  persistentVolumeReclaimPolicy: Retain 
+

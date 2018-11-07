@@ -1,0 +1,89 @@
+---
+## This playbook assumes pv/pvc definitions are preconfigured and NFS shares are configured accordingly
+- hosts: masters
+  become: true
+  tasks:
+  - block:
+      - name: "Determine that all nodes are available"
+        command: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig get nodes
+        register: result
+      - debug: var=result
+
+      - name: "Assign cluster-admin RBAC role to admin user"
+        command: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig adm policy add-cluster-role-to-user cluster-admin admin
+        ignore_errors: true
+        register: result
+      - debug: var=result
+
+      - name: "Create a temporary directory for PV/PVC definitions"
+        file:
+          path: /var/tmp/ocp_temp
+          state: directory
+
+      - name: "Template internal registry PV"
+        template: 
+           src: registry-nfs-pv.j2
+           dest: /var/tmp/ocp_temp/registry-nfs-pv.yml
+
+      - name: "Template internal registry PVC"
+        template: 
+           src: registry-nfs-claim.j2
+           dest: /var/tmp/ocp_temp/registry-nfs-claim.yml
+
+      - name: "Template jenkins PV"
+        template: 
+           src: jenkins-nfs-pv.j2
+           dest: /var/tmp/ocp_temp/jenkins-nfs-pv.yml
+
+      - name: "Template jenkins PVC"
+        template: 
+           src: jenkins-nfs-claim.j2
+           dest: /var/tmp/ocp_temp/jenkins-nfs-claim.yml
+
+      - name: "Create internal registry PV"
+        command: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig create -f /var/tmp/ocp_temp/registry-nfs-pv.yml
+        ignore_errors: true
+
+      - name: "Create internal registry PVC"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig create -f /var/tmp/ocp_temp/registry-nfs-claim.yml -n default
+        ignore_errors: true
+
+      - name: "Overwrite internal registry emptydir vloume with NFS volume"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig volume deploymentconfigs/docker-registry --add --name=registry-storage -t pvc --claim-name=registry-dev-nfs --overwrite -n default
+        ignore_errors: true
+
+      - name: "Create Jenkins project"
+        command: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig new-project jenkins
+        ignore_errors: true
+
+      - name: "Deploy Jenkins app"
+        command: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig new-app jenkins
+        ignore_errors: true
+
+      - name: "Create Jenkins PV"
+        command: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig create -f /var/tmp/ocp_temp/jenkins-nfs-pv.yml
+        ignore_errors: true
+
+      - name: "Create Jenkins PVC"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig create -f /var/tmp/ocp_temp/jenkins-nfs-claim.yml -n jenkins
+        ignore_errors: true
+
+      - name: "Overwrite Jenkins emptydir vloume with NFS volume"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig volume deploymentconfigs/jenkins --add --name=jenkins-data -t pvc --claim-name=jenkins-dev-nfs --overwrite -n jenkins
+        ignore_errors: true
+
+      - name: "Patch Jenkins DeploymentConfig with correct image"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig patch dc jenkins patch='{"spec":{"template":{"spec":{"containers":[{"name":"<container-name>","image":"registry.access.redhat.com/openshift3/jenkins-2-rhel7@sha256:97ecffb2ecd8f8517abe9c8296a1404e5661038a1327f95f068c1fcc5c6e08b8"}]}}}}' -n jenkins
+        ignore_errors: true
+
+      - name: "Create a route"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig expose svc jenkins -n jenkins
+        ignore_errors: true
+
+      - name: "Scale up Jenkins to 3 replicas"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig scale --replicas=3 dc jenkins -n jenkins
+        ignore_errors: true
+
+    when: ( inventory_hostname == groups.masters[0] )
+
+

@@ -1,0 +1,16 @@
+#!/usr/bin/ansible-playbook
+---
+- hosts: nodes
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: Pull down static pod images
+    vars:
+      images:
+      - registry.access.redhat.com/rhel7/etcd:3.2.22
+      - registry.access.redhat.com/openshift3/ose-node:v3.10
+      - registry.access.redhat.com/openshift3/ose-node:v3.10.45
+      - registry.access.redhat.com/openshift3/ose-control-plane:v3.10
+      - registry.access.redhat.com/openshift3/ose-pod:v3.10.45
+    command: "docker pull {{ item }}"
+    with_items: images

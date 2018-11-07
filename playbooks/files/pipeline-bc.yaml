@@ -1,0 +1,24 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: poc-pipeline
+  namespace: jenkins
+spec:
+  nodeSelector: {}
+  output: {}
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    git:
+      uri: 'git@180.189.42.59:admin1/OpenShift.git'
+    sourceSecret:
+      name: repo-at-gitlab
+    type: Git
+  strategy:
+    jenkinsPipelineStrategy: {}
+    type: JenkinsPipeline
+  triggers: []
+status:
+  lastVersion: 7
+
