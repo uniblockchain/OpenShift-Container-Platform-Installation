@@ -6,6 +6,13 @@
 #
 # Doing this eliminates dependency drift between OCP versions and eases
 # the process of upgrades and maintainence
+#
+# What this means in more or less English is that all custom playbooks living in the 
+# /playbooks directory will be mounted into an Ansible container alongside the Red Hat
+# official installation code. Which container version this is will be dictated by your
+# Inventory configuration, so the 'official' code is always current (or at least lock-step),
+# while your custom work will always be available in parralel. Upgrades and downgrades do not
+# reuqire dependancy management on the deployment server. 
 
 setup() {
   echo "Performing Docker pre-req checks pre-deployment.."
