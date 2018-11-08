@@ -1,9 +1,10 @@
 #!/bin/bash
 ## Note - Don't actually use this. While theoretically you can automate the process of moving artifacts from one platform to another,
 # it would be a hell of lot cleaner, more reliable, and easier to use a CI/CD pipeline to re-deploy your workload to the new platform. 
-# After all - you don't modify containers, you tear them down and spin them back up again
+# After all - you don't modify containers, you tear them down and spin them back up again. Nevertheless, someone at some 
+# point asked me to proof out the idea, so here's a record of it. 
 
-
+# Assumes you're running on a master
 domain=$(hostname -d)
 
 # ToDo - Warn user token is a reuqirement
@@ -95,7 +96,9 @@ done
 # the project, enumerate project names and export
 # these additional OCP artifacts into a .json file
 for dir in `ls ${TMPDIR}`; do
-                for object in rolebindings serviceaccounts secrets imagestreamtags podpreset cms egressnetworkpolicies rolebindingrestrictions limitranges resourcequotas pvcs templates cronjobs statefulsets hpas deployments replicasets poddisruptionbudget endpoints; do
+                for object in rolebindings serviceaccounts secrets imagestreamtags podpreset cms egressnetworkpolicies 	\ 
+			rolebindingrestrictions limitranges resourcequotas pvcs templates cronjobs statefulsets hpas	\ 
+			deployments replicasets poddisruptionbudget endpoints; do
                         if [ ! -e ${TMPDIR}/${dir}/${object}.json ]; then
                                 echo "Exporting ${object} for ${dir} into ${TMPDIR}/${dir}";
                                 /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig export -n ${dir} ${object} -o json > ${TMPDIR}/${dir}/${object}.json 2>/dev/null;
