@@ -17,7 +17,7 @@ spec:
   runPolicy: Serial
   source:
     git:
-      uri: git@180.189.42.59:admin1/java-web-server.git
+# ChangeMe      uri: git@example.com:user/java-web-server.git
     type: Git
   strategy:
     dockerStrategy:
