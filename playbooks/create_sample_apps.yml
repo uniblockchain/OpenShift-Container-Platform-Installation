@@ -4,50 +4,65 @@
   become: true
   tasks:
   - block:
-      - name: check if all nodes are up
-        command: oc get nodes
+      - name: "Ensure Nodes are ready"
+        command: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig get nodes
         register: result
       - debug: var=result
-      - name: Assign cluster admin role to admin user
-        command: oc adm policy add-cluster-role-to-user cluster-admin admin
+
+      - name: "Assign cluster admin role to admin user"
+        command: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig adm policy add-cluster-role-to-user cluster-admin admin
         ignore_errors: true
         register: result
       - debug: var=result
-      - name: Create new ssh key pair for deploy key
+
+      - name: "Create new ssh key pair for deploy key"
         shell: ssh-keygen -C "openshift-source-builder/repo@gitlab" -f repo-at-gitlab -N ''
-      - name: Create a temporary directory for app definitions
+
+      - name: "Create a temporary directory for app definitions"
         file:
           path: /var/tmp/ocp_apps
           state: directory
-      - name: template pipeline poc example
+
+      - name: "Template pipeline poc example"
         template: 
            src: pipeline-bc.j2
            dest: /var/tmp/ocp_temp/pipeline.yml
 #create a deploy key in the gitlab under the specific repo with the public key
-      - name: Create new secret based on keys generated
-        shell: oc create secret generic repo-at-gitlab-pl --from-file=ssh-privatekey=/root/repo-at-gitlab --from-file=ssh-publickey=/root/repo-at-gitlab.pub -n jenkins
-      - name: Link secret to builder role
-        shell: oc secrets link builder repo-at-gitlab-pl -n jenkins
-      - name: Annotate new secret
-        shell: oc annotate secret/repo-at-gitlab-pl 'build.openshift.io/source-secret-match-uri-1=ssh://180.189.42.59:admin1/OpenShift.git/*' --overwrite -n jenkins
-      - name: Create build config for example pipeline
-        shell: oc create -f /var/tmp/ocp_apps/pipeline.yml -n jenkins
+#
+      - name: "Create new secret based on keys generated"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig create secret generic repo-at-gitlab-pl --from-file=ssh-privatekey=/root/repo-at-gitlab --from-file=ssh-publickey=/root/repo-at-gitlab.pub -n jenkins
+
+      - name: "Link secret to builder role"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig secrets link builder repo-at-gitlab-pl -n jenkins
+
+      - name: "Annotate new secret"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig annotate secret/repo-at-gitlab-pl 'build.openshift.io/source-secret-match-uri-1=ssh://180.189.42.59:admin1/OpenShift.git/*' --overwrite -n jenkins
+
+      - name: "Create build config for example pipeline"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig create -f /var/tmp/ocp_apps/pipeline.yml -n jenkins
         ignore_errors: true
-      - name: Start build for example pipeline
-        shell: oc start-build poc-pipeline -n jenkins
+
+      - name: "Start build for example pipeline"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig start-build poc-pipeline -n jenkins
         ignore_errors: true
-      - name: Create new project for S2I example
-        shell: oc new-project s2i-poc
+
+      - name: "Create new project for S2I example"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig new-project s2i-poc
 #create a deploy key in the gitlab under the specific repo with the public key
-      - name: Create new secret based on keys generated
-        shell: oc create secret generic repo-at-gitlab --from-file=ssh-privatekey=/root/repo-at-gitlab --from-file=ssh-publickey=/root/repo-at-gitlab.pub -n s2i-poc
-      - name: Link secret to builder role
-        shell: oc secrets link builder repo-at-gitlab -n s2i-poc
-      - name: Annotate new secret
-        shell: oc annotate secret/repo-at-gitlab 'build.openshift.io/source-secret-match-uri-1=ssh://180.189.42.59:admin1/java-web-server.git/*' --overwrite
-      - name: Create new app
-        shell: oc new-app git@180.189.42.59:admin1/java-web-server.git --source-secret=repo-at-gitlab
-      - name: expose new app
-        shell: oc expose svc java-web-server 
+#
+      - name: "Create new secret based on keys generated"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig create secret generic repo-at-gitlab --from-file=ssh-privatekey=/root/repo-at-gitlab --from-file=ssh-publickey=/root/repo-at-gitlab.pub -n s2i-poc
+
+      - name: "Link secret to builder role"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig secrets link builder repo-at-gitlab -n s2i-poc
+
+      - name: "Annotate new secret"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig annotate secret/repo-at-gitlab 'build.openshift.io/source-secret-match-uri-1=ssh://180.189.42.59:admin1/java-web-server.git/*' --overwrite
+
+      - name: "Create new app"
+#ChangeMe        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig new-app git@example.com:user/java-web-server.git --source-secret=repo-at-gitlab
+#
+      - name: "Expose new app"
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfig expose svc java-web-server 
     when: ( inventory_hostname == groups.masters[0] )
 

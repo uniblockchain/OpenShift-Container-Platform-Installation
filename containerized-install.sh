@@ -58,7 +58,7 @@ _ansible_playbook() {
 # Define functionality 
 create_user() {
   echo "Creating and configuring OCP deployment user"
-  _ansible_playbook /tmp/playbooks/create-ocp-user.yml
+  _ansible_playbook /tmp/playbooks/create_ocp_user.yml
 }
 
 ocpadmin_sudo() {
@@ -69,11 +69,6 @@ ocpadmin_sudo() {
 environment() {
   echo "Running custom environment setup script"
   _ansible_playbook /tmp/playbooks/environment.yml
-}
-
-obliterateSat5() {
-  echo "Running custom playbook to remove all traces of Satellite 5"
-  _ansible_playbook /tmp/playbooks/obliterateSat5.yml
 }
 
 prep_hosts() {
@@ -137,7 +132,6 @@ uninstall() {
 # create_user
 # ocpadmin_sudo
 # environment
-# obliterateSat5
 # prep_hosts
 # set_docker_proxy
 # docker_storage_setup

@@ -14,10 +14,10 @@
            dest: /var/tmp/ocp_pvs/pv{{ item }}-5g.yml
         with_sequence: start=3 end=9 stride=1 
       - name: Create pvs
-        command: oc create -f /var/tmp/ocp_pvs/pv{{ item }}-5g.yml
+        command: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfigcreate -f /var/tmp/ocp_pvs/pv{{ item }}-5g.yml
         with_sequence: start=3 end=9 stride=1 
       - name: Print pvs
-        shell: oc get pv
+        shell: /usr/bin/oc --config=/etc/origin/master/admin.kubeconfigget pv
     when: ( inventory_hostname == groups.masters[0] )
 
 
