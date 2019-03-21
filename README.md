@@ -1,7 +1,7 @@
 # OpenShift - Lab Environment
 
 ## This project contains a collection of tools and resources required to 
-## implement OpenShift Container Platform within the Santander environment.
+## implement OpenShift Container Platform.
 
 ## A script, which containerizes the install, has been created for 
 ## simplified deployments and reduced dependancy management, for example:
